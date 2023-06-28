@@ -6,9 +6,9 @@ import SwiftSugar
 public struct AlertLayer: View {
 
     @Binding var message: String
-    @Binding var showingAlert: Bool
+    @Binding var isPresented: Bool
     
-    @State private var internalShowingAlert: Bool = false
+    @State private var internalIsPresented: Bool = false
     @State private var presentTask: Task<Void, Error>? = nil
     @State private var presentAnimationStep = 0
     
@@ -25,22 +25,27 @@ public struct AlertLayer: View {
                 Spacer()
             }
         }
-        .onChange(of: showingAlert, showingAlertChanged)
+        .onChange(of: isPresented, isPresentedChanged)
+    }
+    
+    init(message: Binding<String>, isPresented: Binding<Bool>) {
+        _message = message
+        _isPresented = isPresented
     }
     
     enum PresentAnimationPhase: CaseIterable {
         case start, middle, end
     }
     
-    private func showingAlertChanged(oldValue: Bool, newValue: Bool) {
+    private func isPresentedChanged(oldValue: Bool, newValue: Bool) {
         guard newValue == true else { return }
-        showingAlert = false
+        isPresented = false
         presentTask?.cancel()
         presentTask = Task {
             await MainActor.run {
 //                withAnimation(.bouncy) {
                 withAnimation {
-                    internalShowingAlert = true
+                    internalIsPresented = true
                 }
             }
             
@@ -49,7 +54,7 @@ public struct AlertLayer: View {
             await MainActor.run {
 //                withAnimation(.snappy) {
                 withAnimation(.snappy) {
-                    internalShowingAlert = false
+                    internalIsPresented = false
                 }
             }
         }
@@ -124,7 +129,7 @@ public struct AlertLayer: View {
     
     private func offsetY(_ proxy: GeometryProxy) -> CGFloat {
         var offset = -proxy.safeAreaInsets.top
-        if !internalShowingAlert {
+        if !internalIsPresented {
             offset -= OffscreenYOffset
         }
         return offset
@@ -132,7 +137,7 @@ public struct AlertLayer: View {
     
     private func offsetY(_ proxy: GeometryProxy, phase: PresentAnimationPhase) -> CGFloat {
         var offset = -proxy.safeAreaInsets.top
-        if !internalShowingAlert {
+        if !internalIsPresented {
             switch phase {
             case .start:
                 offset -= OffscreenYOffset
