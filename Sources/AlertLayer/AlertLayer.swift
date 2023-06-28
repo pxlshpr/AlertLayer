@@ -18,6 +18,11 @@ public struct AlertLayer: View {
     private let HorizontalPadding: CGFloat = 10
     private let OffscreenYOffset: CGFloat = 120
 
+    public init(message: Binding<String>, isPresented: Binding<Bool>) {
+        _message = message
+        _isPresented = isPresented
+    }
+    
     public var body: some View {
         GeometryReader { proxy in
             VStack {
@@ -26,11 +31,6 @@ public struct AlertLayer: View {
             }
         }
         .onChange(of: isPresented, isPresentedChanged)
-    }
-    
-    init(message: Binding<String>, isPresented: Binding<Bool>) {
-        _message = message
-        _isPresented = isPresented
     }
     
     enum PresentAnimationPhase: CaseIterable {
